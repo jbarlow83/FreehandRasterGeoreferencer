@@ -14,7 +14,7 @@ import os.path
 import string
 
 from PyQt4 import QtGui
-from PyQt4.QtCore import qDebug, QObject, SIGNAL
+from PyQt4.QtCore import QObject, SIGNAL
 from PyQt4.QtGui import QFileDialog, QMessageBox
 from qgis.core import QgsProject
 
@@ -41,12 +41,11 @@ class FreehandRasterGeoreferencerDialog(QtGui.QDialog,
         if not found:
             bDir = os.path.expanduser("~")
 
-        qDebug(repr(bDir))
         filepath = u'%s' % (QFileDialog.getOpenFileName(
             self, "Select image", bDir, "Images (*.png *.bmp *.jpg *.tif)"))
-        self.lineEditImagePath.setText(filepath)
 
         if filepath:
+            self.lineEditImagePath.setText(filepath)
             bDir, _ = os.path.split(filepath)
             QgsProject.instance().writeEntry(utils.SETTINGS_KEY,
                                              utils.SETTING_BROWSER_RASTER_DIR,
