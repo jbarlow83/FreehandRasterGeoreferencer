@@ -75,8 +75,8 @@ class ExportGeorefRasterCommand(object):
         img.fill(QColor(0, 0, 0, 0))
 
         painter = QPainter(img)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        # painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        # painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
 
         rect = QRectF(
             QPointF(-layer.image.width() / 2.0, -layer.image.height() / 2.0),
