@@ -26,7 +26,13 @@ class ExportGeorefRasterCommand(object):
         self.iface = iface
 
     def _exportGeorefRaster(
-        self, layer, rasterPath, isPutRotationInWorldFile, isExportOnlyWorldFile, baseRasterFilePath, rasterFormat
+        self,
+        layer,
+        rasterPath,
+        isPutRotationInWorldFile,
+        isExportOnlyWorldFile,
+        baseRasterFilePath,
+        rasterFormat,
     ):
         originalWidth = layer.image.width()
         originalHeight = layer.image.height()
@@ -135,9 +141,7 @@ class ExportGeorefRasterCommand(object):
         crsFilePath = rasterPath + ".aux.xml"
         with open(crsFilePath, "w") as writer:
             writer.write(
-                self.auxContent(
-                    self.iface.mapCanvas().mapSettings().destinationCrs()
-                )
+                self.auxContent(self.iface.mapCanvas().mapSettings().destinationCrs())
             )
 
         widget = QgsMessageBar.createMessage(
@@ -159,7 +163,7 @@ class ExportGeorefRasterCommand(object):
                 isPutRotationInWorldFile=isPutRotationInWorldFile,
                 isExportOnlyWorldFile=isExportOnlyWorldFile,
                 baseRasterFilePath=baseRasterFilePath,
-                rasterFormat=rasterFormat
+                rasterFormat=rasterFormat,
             )
         except Exception as ex:
             QgsMessageLog.logMessage(repr(ex))
