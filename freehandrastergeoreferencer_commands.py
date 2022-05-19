@@ -25,13 +25,84 @@ class ExportGeorefRasterCommand(object):
     def __init__(self, iface):
         self.iface = iface
 
+    def _export_world_only(self, layer, originalWidth, originalHeight, radRotation):
+        # keep the image as is and put all transformation params
+        # in world file
+        img = layer.image
+
+        a = layer.xScale * math.cos(radRotation)
+        # sin instead of -sin because angle in CW
+        b = -layer.yScale * math.sin(radRotation)
+        d = layer.xScale * -math.sin(radRotation)
+        e = -layer.yScale * math.cos(radRotation)
+        c = layer.center.x() - (
+            a * (originalWidth - 1) / 2 + b * (originalHeight - 1) / 2
+        )
+        f = layer.center.y() - (
+            d * (originalWidth - 1) / 2 + e * (originalHeight - 1) / 2
+        )
+        return img, a, b, c, d, e, f
+
+    def _export_repainted(self, layer, originalWidth, originalHeight, radRotation):
+        # transform the image with rotation and scaling between the
+        # axes
+        # maintain at least the original resolution of the raster
+        ratio = layer.xScale / layer.yScale
+        if ratio > 1:
+            # increase x
+            scaleX = ratio
+            scaleY = 1
+        else:
+            # increase y
+            scaleX = 1
+            scaleY = 1.0 / ratio
+
+        width = abs(scaleX * originalWidth * math.cos(radRotation)) + abs(
+            scaleY * originalHeight * math.sin(radRotation)
+        )
+        height = abs(scaleX * originalWidth * math.sin(radRotation)) + abs(
+            scaleY * originalHeight * math.cos(radRotation)
+        )
+
+        qDebug("wh %f,%f" % (width, height))
+
+        img = QImage(
+            QSize(math.ceil(width), math.ceil(height)), QImage.Format_ARGB32
+        )
+        # transparent background
+        img.fill(QColor(0, 0, 0, 0))
+
+        painter = QPainter(img)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        # painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+
+        rect = QRectF(
+            QPointF(-layer.image.width() / 2.0, -layer.image.height() / 2.0),
+            QPointF(layer.image.width() / 2.0, layer.image.height() / 2.0),
+        )
+
+        painter.translate(QPointF(width / 2.0, height / 2.0))
+        painter.rotate(layer.rotation)
+        painter.scale(scaleX, scaleY)
+        painter.drawImage(rect, layer.image)
+        painter.end()
+
+        extent = layer.extent()
+        a = extent.width() / width
+        e = -extent.height() / height
+        # 2nd term because (0,0) of world file is on center of upper
+        # left pixel instead of upper left corner of that pixel
+        c = extent.xMinimum() + a / 2
+        f = extent.yMaximum() + e / 2
+        b = d = 0.0
+        return img, a, b, c, d, e, f
+
     def _exportGeorefRaster(
         self,
         layer,
         rasterPath,
         isPutRotationInWorldFile,
         isExportOnlyWorldFile,
-        baseRasterFilePath,
         rasterFormat,
     ):
         originalWidth = layer.image.width()
@@ -39,74 +110,9 @@ class ExportGeorefRasterCommand(object):
         radRotation = layer.rotation * math.pi / 180
 
         if isPutRotationInWorldFile or isExportOnlyWorldFile:
-            # keep the image as is and put all transformation params
-            # in world file
-            img = layer.image
-
-            a = layer.xScale * math.cos(radRotation)
-            # sin instead of -sin because angle in CW
-            b = -layer.yScale * math.sin(radRotation)
-            d = layer.xScale * -math.sin(radRotation)
-            e = -layer.yScale * math.cos(radRotation)
-            c = layer.center.x() - (
-                a * (originalWidth - 1) / 2 + b * (originalHeight - 1) / 2
-            )
-            f = layer.center.y() - (
-                d * (originalWidth - 1) / 2 + e * (originalHeight - 1) / 2
-            )
-
+            img, a, b, c, d, e, f = self._export_world_only(layer, originalWidth, originalHeight, radRotation)
         else:
-            # transform the image with rotation and scaling between the
-            # axes
-            # maintain at least the original resolution of the raster
-            ratio = layer.xScale / layer.yScale
-            if ratio > 1:
-                # increase x
-                scaleX = ratio
-                scaleY = 1
-            else:
-                # increase y
-                scaleX = 1
-                scaleY = 1.0 / ratio
-
-            width = abs(scaleX * originalWidth * math.cos(radRotation)) + abs(
-                scaleY * originalHeight * math.sin(radRotation)
-            )
-            height = abs(scaleX * originalWidth * math.sin(radRotation)) + abs(
-                scaleY * originalHeight * math.cos(radRotation)
-            )
-
-            qDebug("wh %f,%f" % (width, height))
-
-            img = QImage(
-                QSize(math.ceil(width), math.ceil(height)), QImage.Format_ARGB32
-            )
-            # transparent background
-            img.fill(QColor(0, 0, 0, 0))
-
-            painter = QPainter(img)
-            painter.setRenderHint(QPainter.Antialiasing, True)
-            # painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-
-            rect = QRectF(
-                QPointF(-layer.image.width() / 2.0, -layer.image.height() / 2.0),
-                QPointF(layer.image.width() / 2.0, layer.image.height() / 2.0),
-            )
-
-            painter.translate(QPointF(width / 2.0, height / 2.0))
-            painter.rotate(layer.rotation)
-            painter.scale(scaleX, scaleY)
-            painter.drawImage(rect, layer.image)
-            painter.end()
-
-            extent = layer.extent()
-            a = extent.width() / width
-            e = -extent.height() / height
-            # 2nd term because (0,0) of world file is on center of upper
-            # left pixel instead of upper left corner of that pixel
-            c = extent.xMinimum() + a / 2
-            f = extent.yMaximum() + e / 2
-            b = d = 0.0
+            img, a, b, c, d, e, f = self._export_repainted(layer, originalWidth, originalHeight, radRotation)
 
         if not isExportOnlyWorldFile:
             # export image
@@ -121,6 +127,7 @@ class ExportGeorefRasterCommand(object):
             else:
                 img.save(rasterPath, rasterFormat)
 
+        baseRasterFilePath, _ = os.path.splitext(rasterPath)
         worldFilePath = baseRasterFilePath + "."
         if rasterFormat == "jpg":
             worldFilePath += "jgw"
@@ -152,7 +159,6 @@ class ExportGeorefRasterCommand(object):
     def exportGeorefRaster(
         self, layer, rasterPath, isPutRotationInWorldFile, isExportOnlyWorldFile
     ):
-        baseRasterFilePath, _ = os.path.splitext(rasterPath)
         # suppose supported format already checked
         rasterFormat = utils.imageFormat(rasterPath)
 
@@ -162,7 +168,6 @@ class ExportGeorefRasterCommand(object):
                 rasterPath=rasterPath,
                 isPutRotationInWorldFile=isPutRotationInWorldFile,
                 isExportOnlyWorldFile=isExportOnlyWorldFile,
-                baseRasterFilePath=baseRasterFilePath,
                 rasterFormat=rasterFormat,
             )
         except Exception as ex:
