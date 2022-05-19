@@ -6,97 +6,137 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>458</width>
-    <height>119</height>
+    <width>795</width>
+    <height>294</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Export georeferenced raster</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>112</x>
-     <y>81</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEditImagePath">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>10</y>
-     <width>271</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButtonBrowse">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>10</y>
-     <width>81</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Browse...</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>71</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Image path</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBoxRotationMode">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>247</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the raster will be exported as is and the world file will contain the rotation, scaling and translation. Some GIS software may not be able to georeference the raster correctly in this mode. If unchecked, the raster will be modified with the rotation and the scaling between axis and the world file will contain the rest of the transformation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="text">
-    <string>Put rotation in world file </string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBoxOnlyWorldFile">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>65</y>
-     <width>279</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, only the world file will be exported and the chosen file will not be overwritten. The rotation will be included in the world file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="text">
-    <string>Only export world file for chosen raster</string>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Output path</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="pushButtonBrowse">
+     <property name="text">
+      <string>Browse...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditImagePath"/>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Export settings</string>
+     </property>
+     <widget class="QRadioButton" name="radioButtonRaster">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>40</y>
+        <width>651</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Export raster image with world file</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroupRasterRadioButtons</string>
+      </attribute>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxRotationMode">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>80</y>
+        <width>682</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the raster will be exported as is and the world file will contain the rotation, scaling and translation. Some GIS software may not be able to georeference the raster correctly in this mode. If unchecked, the raster will be modified with the rotation and the scaling between axis and the world file will contain the rest of the transformation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Put rotation in world file </string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroupRasterCheckboxes</string>
+      </attribute>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxOnlyWorldFile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>110</y>
+        <width>682</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, only the world file will be exported and the chosen file will not be overwritten. The rotation will be included in the world file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Only export world file for chosen raster (do not modify the raster)</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroupRasterCheckboxes</string>
+      </attribute>
+     </widget>
+     <widget class="QRadioButton" name="radioButtonGeoTIFF">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>150</y>
+        <width>351</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Export as GeoTIFF</string>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroupRasterRadioButtons</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
@@ -107,12 +147,12 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>246</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
-     <y>274</y>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
@@ -123,14 +163,22 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>314</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
-     <y>274</y>
+     <y>147</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupRasterRadioButtons"/>
+  <buttongroup name="buttonGroupRasterCheckboxes">
+   <property name="exclusive">
+    <bool>false</bool>
+   </property>
+  </buttongroup>
+ </buttongroups>
 </ui>

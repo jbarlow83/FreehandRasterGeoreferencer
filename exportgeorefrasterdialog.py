@@ -11,7 +11,7 @@
 
 import os.path
 
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QWidget
 
 from .ui_exportgeorefrasterdialog import Ui_ExportGeorefRasterDialog
 
@@ -21,17 +21,32 @@ class ExportGeorefRasterDialog(QDialog, Ui_ExportGeorefRasterDialog):
         QDialog.__init__(self)
         self.setupUi(self)
 
+        self._originalCheckBoxRotationModeChecked = False
+
         self.pushButtonBrowse.clicked.connect(self.showBrowserDialog)
         self.checkBoxOnlyWorldFile.stateChanged.connect(self.setupOnlyWorldFile)
+        self.radioButtonRaster.toggled.connect(self.reactRadioButtonRaster)
 
     def clear(self, layer):
         self.lineEditImagePath.setText("")
         self.checkBoxRotationMode.setChecked(False)
         self.checkBoxRotationMode.setEnabled(True)
+        self._originalCheckBoxRotationModeChecked = self.checkBoxRotationMode.isChecked()
+
         self.checkBoxOnlyWorldFile.setChecked(False)
+        self.radioButtonRaster.setChecked(True)
 
         defaultPath, _ = os.path.splitext(layer.filepath)
         self.defaultPath = defaultPath + "_georeferenced.png"
+
+    def reactRadioButtonRaster(self, checked):
+        if checked:
+            self.checkBoxOnlyWorldFile.setEnabled(True)
+            self.checkBoxRotationMode.setEnabled(True)
+            self.setupOnlyWorldFile()
+        else:
+            self.checkBoxOnlyWorldFile.setEnabled(False)
+            self.checkBoxRotationMode.setEnabled(False)
 
     def setupOnlyWorldFile(self):
         if self.checkBoxOnlyWorldFile.isChecked():
