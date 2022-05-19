@@ -86,7 +86,7 @@ class ExportGeorefRasterDialog(QDialog, Ui_ExportGeorefRasterDialog):
     def validate(self):
         result = True
         message = ""
-        details = ""
+        details = []
 
         self.isPutRotationInWorldFile = self.checkBoxRotationMode.isChecked()
         self.isExportOnlyWorldFile = self.checkBoxOnlyWorldFile.isChecked()
@@ -94,18 +94,16 @@ class ExportGeorefRasterDialog(QDialog, Ui_ExportGeorefRasterDialog):
         self.imagePath = self.lineEditImagePath.text()
         if not self.imagePath:
             result = False
-            details += "A file must be selected"
+            details.append("A file must be selected")
 
         if result:
             _, extension = os.path.splitext(self.imagePath)
             extension = extension.lower()
             if extension not in [".jpg", ".bmp", ".png", ".tif", ".tiff"]:
                 result = False
-                if len(details) > 0:
-                    details += "\n"
-                details += "The file must be an image"
+                details.append("The file must be an image")
 
         if not result:
             message = "There were errors in the form"
 
-        return result, message, details
+        return result, message, '\n'.join(details)
