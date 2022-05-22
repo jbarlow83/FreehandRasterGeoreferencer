@@ -367,12 +367,18 @@ class FreehandRasterGeoreferencer(object):
         result = self.dialogExportGeorefRaster.exec_()
         if result == 1:
             exportCommand = ExportGeorefRasterCommand(self.iface)
-            exportCommand.exportGeorefRaster(
-                layer,
-                self.dialogExportGeorefRaster.imagePath,
-                self.dialogExportGeorefRaster.isPutRotationInWorldFile,
-                self.dialogExportGeorefRaster.isExportOnlyWorldFile,
-            )
+            if self.dialogExportGeorefRaster.isGeoTIFF:
+                exportCommand.exportGeorefRasterGeoTIFF(
+                    layer,
+                    self.dialogExportGeorefRaster.imagePath,
+                )
+            else:
+                exportCommand.exportGeorefRaster(
+                    layer,
+                    self.dialogExportGeorefRaster.imagePath,
+                    self.dialogExportGeorefRaster.isPutRotationInWorldFile,
+                    self.dialogExportGeorefRaster.isExportOnlyWorldFile,
+                )
 
     def spinBoxRotateUpdate(self, newParameters):
         self.spinBoxRotateValueSetValue(self.layer.rotation)

@@ -68,7 +68,14 @@ class ExportGeorefRasterDialog(QDialog, Ui_ExportGeorefRasterDialog):
         else:
             filepathDialog = self.defaultPath
 
-        if not self.checkBoxOnlyWorldFile.isChecked():
+        if self.radioButtonGeoTIFF.isChecked():
+            filepath, _ = QFileDialog.getSaveFileName(
+                None,
+                "Export GeoTIFF",
+                filepathDialog,
+                "TIFF Images (*.tif *.tiff)",
+            )
+        elif not self.checkBoxOnlyWorldFile.isChecked():
             filepath, _ = QFileDialog.getSaveFileName(
                 None,
                 "Export georeferenced raster",
@@ -105,6 +112,7 @@ class ExportGeorefRasterDialog(QDialog, Ui_ExportGeorefRasterDialog):
 
         self.isPutRotationInWorldFile = self.checkBoxRotationMode.isChecked()
         self.isExportOnlyWorldFile = self.checkBoxOnlyWorldFile.isChecked()
+        self.isGeoTIFF = self.radioButtonGeoTIFF.isChecked()
 
         self.imagePath = self.lineEditImagePath.text()
         if not self.imagePath:

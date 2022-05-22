@@ -1,6 +1,8 @@
 import numpy as np
 from osgeo import gdal
 
+from qgis.core import Qgis, QgsMessageLog
+
 
 def format(filepath):
     dataset = gdal.Open(filepath, gdal.GA_ReadOnly)
@@ -32,3 +34,19 @@ def to_byte(data):
     data = 255.0 * (data - min_) / (max_ - min_)
     data = data.astype(np.uint8)
     return data
+
+
+def save_with_gdal(tmp_filepath, filepath, srs, gt):
+    # GDAL requires us to open the temporary file in update mode, even though it will
+    # be discarded. It does not allow changing SetGeoTransform unless in this mode.
+    dataset = gdal.OpenEx(tmp_filepath, gdal.OF_RASTER | gdal.OF_UPDATE)
+    dataset.SetProjection(srs)
+    cplerr = dataset.SetGeoTransform(gt)
+
+    fileformat = "GTiff"
+    driver = gdal.GetDriverByName(fileformat)
+    dataset_copy = driver.CreateCopy(
+        filepath, dataset, strict=0, options=["TILED=YES", "COMPRESS=JPEG"]
+    )
+    del dataset, driver, dataset_copy
+    return

@@ -13,12 +13,14 @@ import math
 import os
 from re import I
 
-from PyQt5.QtCore import qDebug, QPointF, QRectF, QSize
+
+from PyQt5.QtCore import qDebug, QPointF, QRectF, QSize, QBuffer, QTemporaryFile
 from PyQt5.QtGui import QColor, QImage, QImageWriter, QPainter
 from qgis.core import Qgis, QgsMessageLog
 from qgis.gui import QgsMessageBar
 
 from . import utils
+from .gdal_utils import save_with_gdal
 
 
 class ExportGeorefRasterCommand(object):
@@ -194,3 +196,48 @@ class ExportGeorefRasterCommand(object):
 </PAMDataset>"""  # noqa
         geogOrProj = "Geographic" if crs.isGeographic() else "Projected"
         return content % (geogOrProj, crs.toWkt())
+
+    def _exportGeorefRasterGeoTIFF(self, layer, rasterPath):
+        originalWidth = layer.image.width()
+        originalHeight = layer.image.height()
+        radRotation = layer.rotation * math.pi / 180
+
+        img, a, b, c, d, e, f = self._export_repainted(layer, originalWidth, originalHeight, radRotation)
+
+        tmpfile = QTemporaryFile()  # Windows does not allow name template
+        tmpfile.open()
+        tmpfile.setAutoRemove(False)
+        filename = tmpfile.fileName()
+        writer = QImageWriter()
+        writer.setFormat(b"TIFF")
+        writer.setDevice(tmpfile)
+        # use LZW compression for tiff
+        # useful for scanned documents (mostly white)
+        writer.setCompression(1)
+        writer.write(img)
+        tmpfile.close()
+
+        # Now write a image using GDAL
+        crs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
+        # GDAL affine parameters are in an unusual order
+        # https://gdal.org/tutorials/geotransforms_tut.html
+        gt = [c, a, b, f, d, e]
+
+        QgsMessageLog.logMessage(f"Saving image in {crs} with affine params {gt}")
+        try:
+            save_with_gdal(filename, rasterPath, crs, gt)
+        finally:
+            tmpfile.setAutoRemove(True)
+
+
+    def exportGeorefRasterGeoTIFF(self, layer, rasterPath):
+        try:
+            self._exportGeorefRasterGeoTIFF(layer, rasterPath)
+        except Exception as ex:
+            QgsMessageLog.logMessage(repr(ex))
+            widget = QgsMessageBar.createMessage(
+                "Raster Georeferencer",
+                "There was an error performing this command. "
+                "See QGIS Message log for details.",
+            )
+            self.iface.messageBar().pushWidget(widget, Qgis.Critical, 5)
