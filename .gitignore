@@ -1,6 +1,6 @@
 *.pyc
 ui_*.py
-resources_rc.py 
+resources_rc.py
 *.swp
 .DS_Store
 *.project
@@ -12,3 +12,6 @@ __pycache__
 .env
 .python-version
 test_data
+
+# build folder
+FreehandRasterGeoreferencer/
