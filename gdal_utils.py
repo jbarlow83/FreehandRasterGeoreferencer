@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import numpy as np
 from osgeo import gdal
 
@@ -36,17 +38,28 @@ def to_byte(data):
     return data
 
 
+@contextmanager
+def gdal_exceptions():
+    former_exception_state = gdal.GetUseExceptions()
+    gdal.UseExceptions()
+    try:
+        yield
+    finally:
+        if former_exception_state == 0:
+            gdal.DontUseExceptions()
+
+
 def save_with_gdal(tmp_filepath, filepath, srs, gt):
     # GDAL requires us to open the temporary file in update mode, even though it will
     # be discarded. It does not allow changing SetGeoTransform unless in this mode.
-    dataset = gdal.OpenEx(tmp_filepath, gdal.OF_RASTER | gdal.OF_UPDATE)
-    dataset.SetProjection(srs)
-    cplerr = dataset.SetGeoTransform(gt)
+    with gdal_exceptions():
+        dataset = gdal.OpenEx(tmp_filepath, gdal.OF_RASTER | gdal.OF_UPDATE)
+        dataset.SetProjection(srs)
+        dataset.SetGeoTransform(gt)
 
-    fileformat = "GTiff"
-    driver = gdal.GetDriverByName(fileformat)
-    dataset_copy = driver.CreateCopy(
-        filepath, dataset, strict=0, options=["TILED=YES", "COMPRESS=JPEG"]
-    )
-    del dataset, driver, dataset_copy
-    return
+        fileformat = "GTiff"
+        driver = gdal.GetDriverByName(fileformat)
+        dataset_copy = driver.CreateCopy(
+            filepath, dataset, strict=0, options=["TILED=YES", "COMPRESS=JPEG"]
+        )
+        del dataset, driver, dataset_copy

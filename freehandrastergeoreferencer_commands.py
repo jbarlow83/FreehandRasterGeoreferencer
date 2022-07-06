@@ -11,8 +11,8 @@
 
 import math
 import os
-from re import I
-
+from contextlib import closing
+from pathlib import Path
 
 from PyQt5.QtCore import qDebug, QPointF, QRectF, QSize, QBuffer, QTemporaryFile
 from PyQt5.QtGui import QColor, QImage, QImageWriter, QPainter
@@ -206,16 +206,21 @@ class ExportGeorefRasterCommand(object):
 
         tmpfile = QTemporaryFile()  # Windows does not allow name template
         tmpfile.open()
-        tmpfile.setAutoRemove(False)
-        filename = tmpfile.fileName()
-        writer = QImageWriter()
-        writer.setFormat(b"TIFF")
-        writer.setDevice(tmpfile)
-        # use LZW compression for tiff
-        # useful for scanned documents (mostly white)
-        writer.setCompression(1)
-        writer.write(img)
-        tmpfile.close()
+        with closing(tmpfile):
+            tmpfile.setAutoRemove(False)
+            filename = tmpfile.fileName()
+
+            # Must save as TIFF because GDAL PNG driver does not support update access
+            writer = QImageWriter(tmpfile, b"TIFF")
+            # use LZW compression for tiff
+            # useful for scanned documents (mostly white)
+            writer.setCompression(1)
+            result = writer.write(img)
+            if not result:
+                QgsMessageLog.logMessage(f"Failed to save {filename}: {writer.errorString()}")
+                return
+            else:
+                QgsMessageLog.logMessage(f"Write to {filename} succeeded")
 
         # Now write a image using GDAL
         crs = self.iface.mapCanvas().mapSettings().destinationCrs().authid()
@@ -223,7 +228,11 @@ class ExportGeorefRasterCommand(object):
         # https://gdal.org/tutorials/geotransforms_tut.html
         gt = [c, a, b, f, d, e]
 
-        QgsMessageLog.logMessage(f"Saving image in {crs} with affine params {gt}")
+        if not Path(filename).exists() or Path(filename).stat().st_size == 0:
+            QgsMessageLog.logMessage(f"Failed to save {filename}")
+        else:
+            QgsMessageLog.logMessage(f"Saved temporary image to {filename}")
+        QgsMessageLog.logMessage(f"Saved image in {crs} with affine params {gt}")
         try:
             save_with_gdal(filename, rasterPath, crs, gt)
         finally:
