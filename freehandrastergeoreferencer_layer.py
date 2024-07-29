@@ -15,14 +15,14 @@ import os
 import numpy as np
 from osgeo import gdal
 from PyQt5.QtCore import (
-    pyqtSignal,
-    qDebug,
     QFileInfo,
     QPointF,
     QRectF,
     QSettings,
     QSize,
     Qt,
+    pyqtSignal,
+    qDebug,
 )
 from PyQt5.QtGui import QColor, QImage, QImageReader, QPainter, QPen
 from qgis.core import (
@@ -244,24 +244,25 @@ class FreehandRasterGeoreferencerLayer(QgsPluginLayer):
 
                 # check if image already has georef info
                 # use GDAL
-                dataset = gdal.Open(absPath, gdal.GA_ReadOnly)
-                georef = None
-                if dataset:
-                    georef = dataset.GetGeoTransform()
+                with gdal_utils.gdal_exceptions():
+                    dataset = gdal.Open(absPath, gdal.GA_ReadOnly)
+                    georef = None
+                    if dataset:
+                        georef = dataset.GetGeoTransform()
 
-                if georef and not self.is_default_geotransform(georef):
-                    self.initializeExistingGeoreferencing(dataset, georef)
-                else:
-                    # init to default params
-                    self.setCenter(screenExtent.center())
-                    self.setRotation(0.0)
+                    if georef and not self.is_default_geotransform(georef):
+                        self.initializeExistingGeoreferencing(dataset, georef)
+                    else:
+                        # init to default params
+                        self.setCenter(screenExtent.center())
+                        self.setRotation(0.0)
 
-                    sw = screenExtent.width()
-                    sh = screenExtent.height()
+                        sw = screenExtent.width()
+                        sh = screenExtent.height()
 
-                    self.resetScale(sw, sh)
+                        self.resetScale(sw, sh)
 
-                    self.commitTransformParameters()
+                        self.commitTransformParameters()
 
     def preCheckImage(self, filepath):
         nbands, datatype, width, height = gdal_utils.format(filepath)
