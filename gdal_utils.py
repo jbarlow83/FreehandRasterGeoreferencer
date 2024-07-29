@@ -3,27 +3,29 @@ from osgeo import gdal, ogr
 
 
 def format(filepath):
-    dataset = gdal.Open(filepath, gdal.GA_ReadOnly)
-    cols = dataset.RasterXSize
-    rows = dataset.RasterYSize
-    bands = dataset.RasterCount
-    if bands == 0:
-        return None
-    band = dataset.GetRasterBand(1)
-    bandtype = gdal.GetDataTypeName(band.DataType)
+    with ogr.ExceptionMgr(useExceptions=True):
+        dataset = gdal.Open(filepath, gdal.GA_ReadOnly)
+        cols = dataset.RasterXSize
+        rows = dataset.RasterYSize
+        bands = dataset.RasterCount
+        if bands == 0:
+            return None
+        band = dataset.GetRasterBand(1)
+        bandtype = gdal.GetDataTypeName(band.DataType)
 
-    return bands, bandtype, cols, rows
+        return bands, bandtype, cols, rows
 
 
 def pixels(filepath):
-    dataset = gdal.Open(filepath, gdal.GA_ReadOnly)
-    cols = dataset.RasterXSize
-    rows = dataset.RasterYSize
-    data = dataset.ReadAsArray(0, 0, cols, rows)
-    if len(data.shape) == 2:
-        # monoband
-        data = data.reshape((1, *data.shape))
-    return data
+    with ogr.ExceptionMgr(useExceptions=True):
+        dataset = gdal.Open(filepath, gdal.GA_ReadOnly)
+        cols = dataset.RasterXSize
+        rows = dataset.RasterYSize
+        data = dataset.ReadAsArray(0, 0, cols, rows)
+        if len(data.shape) == 2:
+            # monoband
+            data = data.reshape((1, *data.shape))
+        return data
 
 
 def to_byte(data):
