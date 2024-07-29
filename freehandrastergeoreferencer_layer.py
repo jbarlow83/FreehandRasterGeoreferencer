@@ -13,7 +13,7 @@ import math
 import os
 
 import numpy as np
-from osgeo import gdal
+from osgeo import gdal, ogr
 from PyQt5.QtCore import (
     QFileInfo,
     QPointF,
@@ -244,7 +244,7 @@ class FreehandRasterGeoreferencerLayer(QgsPluginLayer):
 
                 # check if image already has georef info
                 # use GDAL
-                with gdal_utils.gdal_exceptions():
+                with ogr.ExceptionMgr(useExceptions=True):
                     dataset = gdal.Open(absPath, gdal.GA_ReadOnly)
                     georef = None
                     if dataset:

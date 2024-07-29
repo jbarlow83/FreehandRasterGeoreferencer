@@ -1,9 +1,5 @@
-from contextlib import contextmanager
-
 import numpy as np
-from osgeo import gdal
-
-from qgis.core import Qgis, QgsMessageLog
+from osgeo import gdal, ogr
 
 
 def format(filepath):
@@ -38,21 +34,10 @@ def to_byte(data):
     return data
 
 
-@contextmanager
-def gdal_exceptions():
-    former_exception_state = gdal.GetUseExceptions()
-    gdal.UseExceptions()
-    try:
-        yield
-    finally:
-        if former_exception_state == 0:
-            gdal.DontUseExceptions()
-
-
 def save_with_gdal(tmp_filepath, filepath, srs, gt):
     # GDAL requires us to open the temporary file in update mode, even though it will
     # be discarded. It does not allow changing SetGeoTransform unless in this mode.
-    with gdal_exceptions():
+    with ogr.ExceptionMgr(useExceptions=True):
         dataset = gdal.OpenEx(tmp_filepath, gdal.OF_RASTER | gdal.OF_UPDATE)
         dataset.SetProjection(srs)
         dataset.SetGeoTransform(gt)
