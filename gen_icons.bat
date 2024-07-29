@@ -8,5 +8,5 @@ convert -size 24x24 xc:purple -gravity Center \( -density 288 -size 96x96 xc:non
 convert -size 24x24 xc:yellow -gravity Center \( -density 288 -size 96x96 xc:none -fill 'green' -font "Consolas"  -pointsize 14  -annotate 0 'SC' -resize 25% -fuzz 10% -trim \) -composite +repage iconScale.png
 convert -size 24x24 xc:white -gravity Center \( -density 288 -size 96x96 xc:none -fill 'black' -font "Consolas"  -pointsize 14  -annotate 0 'T-' -resize 25% -fuzz 10% -trim \) -composite +repage iconTransparencyDecrease.png
 convert -size 24x24 xc:black -gravity Center \( -density 288 -size 96x96 xc:none -fill 'white' -font "Consolas"  -pointsize 14  -annotate 0 'T+' -resize 25% -fuzz 10% -trim \) -composite +repage iconTransparencyIncrease.png
-
+convert -size 24x24 xc:yellow -gravity Center \( -density 288 -size 96x96 xc:none -fill 'blue' -font "Consolas"  -pointsize 14  -annotate 0 '1:N' -resize 25% -fuzz 10% -trim \) -composite +repage iconFixedScale.png
 
